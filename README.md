@@ -1,2 +1,4 @@
-# OPPOCTL Command line serial ctonrol of Oppo players
+# OPPOCTL Command line serial control of Oppo players
 
+
+Tested on Oppo BDP-103

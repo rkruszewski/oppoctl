@@ -16,7 +16,7 @@ read_timeout = 1000
 
 # There are many more commands, I am choosing to define the commands
 # I would most likely use in a home automation implementation,
-# and the commands that also have greatest chance of cross-tv compatibilty.
+# and the commands that also have greatest chance of cross-model compatibilty.
 commands = {
   power:    'POW',
   powstat:  'QPW',
