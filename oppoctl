@@ -1,0 +1,109 @@
+#!/usr/bin/env ruby
+#
+# oppoctl
+#
+# command line serial control for Oppo players
+#
+# Verified to work with BDP-103
+#
+require 'serialport'
+
+port_str = '/dev/ttyUSB0'
+
+serial_params = { baud: 9600, data_bits: 8, stop_bits: 1, parity: SerialPort::NONE }
+
+read_timeout = 1000
+
+# There are many more commands, I am choosing to define the commands
+# I would most likely use in a home automation implementation,
+# and the commands that also have greatest chance of cross-tv compatibilty.
+commands = {
+  power:    'POW',
+  powstat:  'QPW',
+  version:  'QVR',
+  eject:    'EJT',
+  mute:     'MUT',
+  up:       'NUP',
+  down:     'NDN',
+  left:     'NLT',
+  right:    'NRT',
+  enter:    'SEL',
+  return:   'RET',
+  stop:     'STP',
+  play:     'PLA',
+  pause:    'PAU',
+  previous: 'PRE',
+  next:     'NXT',
+  forward:  'FWD',
+  reverse:  'REV',
+  audio:    'AUD',
+  subtitle: 'SUB',
+  reset:    'RST',
+  noop:     'NOP'
+}
+
+def usage
+  puts <<-EOL
+
+Usage: #{$PROGRAM_NAME} [command]
+
+Valid commands:
+
+0-9 | on | off | power | powstat | version | eject | mute | up | down | left | right | enter | return | stop | play | pause | previous | next | forward | reverse | audio | subtitle | reset | noop
+
+EOL
+end
+
+def send_command(port_str, read_timeout, serial_params, command)
+  # I read somewhere to use separate objects for writers and readers in ruby.
+  sp_writer = SerialPort.new(port_str, serial_params)
+  sp_writer.read_timeout = read_timeout
+  sp_reader = SerialPort.new(port_str, serial_params)
+  sp_reader.read_timeout = read_timeout
+
+  begin
+    retries ||= 6
+    sp_writer.write('#' + command + "\r")
+    response = sp_reader.readline("\r")
+  rescue
+    if (retries -= 1) > 0
+      sleep(2)
+      retry
+    else
+      response = "\##{command} ER"
+    end
+  end
+
+  response
+end
+
+##
+# Main
+##
+
+if ARGV.length != 1
+  usage
+  exit(1)
+end
+
+command = case ARGV[0]
+          when /^[0-9]$/
+            'NU' + ARGV[0]
+          when /^on|off$/
+            'P' + ARGV[0][0..1].upcase
+          when ->(n) { commands.keys.include? n.to_sym }
+            commands[ARGV[0].to_sym]
+          else
+            'INVALID'
+          end
+
+if command == 'INVALID'
+  puts "\nError.  Invalid command.\n"
+  exit(1)
+else
+  response = send_command(port_str, read_timeout, serial_params, command)
+end
+
+puts response.chomp
+
+exit(1) if response.chomp =~ /^##{command} *ER$/
