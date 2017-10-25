@@ -42,14 +42,19 @@ commands = {
   noop:     'NOP'
 }
 
-def usage
+def usage(commands)
+  command = ''
+  commands.keys.each do |k|
+    command += "| #{k} "
+  end
+
   puts <<-EOL
 
 Usage: #{$PROGRAM_NAME} [command]
 
 Valid commands:
 
-0-9 | on | off | power | powstat | version | eject | mute | up | down | left | right | enter | return | stop | play | pause | previous | next | forward | reverse | audio | subtitle | reset | noop
+0-9 | on | off #{command}
 
 EOL
 end
@@ -87,7 +92,7 @@ end
 ##
 
 if ARGV.length != 1
-  usage
+  usage(commands)
   exit(1)
 end
 
