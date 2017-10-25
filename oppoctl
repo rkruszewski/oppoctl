@@ -54,7 +54,12 @@ Valid commands:
 EOL
 end
 
-def send_command(port_str, read_timeout, serial_params, command)
+def send_command(port_str, read_timeout, serial_params, command) # rubocop:disable Metrics/AbcSize
+  unless File.chardev?(port_str)
+    puts "\nError: port #{port_str} is not a valid character device.  Exiting.\n"
+    exit(1)
+  end
+
   # I read somewhere to use separate objects for writers and readers in ruby.
   sp_writer = SerialPort.new(port_str, serial_params)
   sp_writer.read_timeout = read_timeout
