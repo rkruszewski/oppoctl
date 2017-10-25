@@ -109,6 +109,7 @@ command = case ARGV[0]
 
 if command == 'INVALID'
   puts "\nError.  Invalid command.\n"
+  usage(commands)
   exit(1)
 else
   response = send_command(port_str, read_timeout, serial_params, command)
